@@ -6,263 +6,379 @@ const mongo = require('./mongo');
 const vcxroom = require('./vcxroom');
 const logger = require('./logger');
 
-const getDeviceDetails = async (phoneNumber, platform) => {
-  const result = await (mongo.getRemoteDeviceToken(phoneNumber, platform));
-  logger.info(result);
+const getCustomerDetails = async (remotePhoneNumber) => {
+  const result = await (mongo.getCustomerByNumber(remotePhoneNumber));
+  logger.info(JSON.stringify(result));
   return result;
 };
 
-// endpoint to send messages for various actions
-router.post('/sendMessage', (req, res) => {
+// initiate call
+router.post('/call', (req, res) => {
   try {
-    const { type } = req.body;
-    if (type === 'answer') {
-      getDeviceDetails(req.body.phone_number, req.body.platform).then((remoteDeviceToken) => {
-        if (remoteDeviceToken) {
-          // create EnableX room
-          let roomId = '';
-          logger.info('creating enablex room');
-          vcxroom.createRoom((roomStatus, roomData) => {
-            logger.info(`roomStatus ${roomStatus}`);
-            logger.info(JSON.stringify(roomData));
-            if (roomStatus === 'success') {
-              // Room Created successfully, create EnableX room token for moderator
-              logger.info('creating enablex token for moderator');
-              roomId = roomData.room.room_id;
-              const createModeratorTokenObj = {
-                name: req.body.phone_number,
-                role: 'moderator',
-                user_ref: req.body.phone_number,
-                roomId,
-              };
-
-              let moderatorToken = '';
-              vcxroom.getToken(createModeratorTokenObj, (tokenStatus, tokenData) => {
-                logger.info(tokenStatus);
-                logger.info(JSON.stringify(tokenData));
-                if (tokenStatus === 'success') {
-                  // moderator token created successfully, now create room token for participant
-                  moderatorToken = tokenData.token;
-                  const createParticipantTokenObj = {
-                    name: req.body.localPhonenumber,
-                    role: 'participant',
-                    user_ref: req.body.localPhonenumber,
-                    roomId,
-                  };
-
-                  let participantToken = '';
-                  logger.info('creating enablex token for participant');
-                  vcxroom.getToken(createParticipantTokenObj, (status, data) => {
-                    logger.info(status);
-                    logger.info(JSON.stringify(data));
-                    if (status === 'success') {
-                      // room created and token created for moderator & participant
-                      participantToken = data.token;
-                      // send roomId & token to remote device using push notification
-                      if (remoteDeviceToken[0].platform === 'android') {
-                        firebase.sendToDevice(
-                          remoteDeviceToken[0].token,
-                          moderatorToken,
-                          req.body.phone_number,
-                          req.body.localPhonenumber,
-                          roomId,
-                        );
-                      } else if (remoteDeviceToken[0].platform === 'ios') {
-                        apn.sendNotification(
-                          remoteDeviceToken[0].token,
-                          moderatorToken,
-                          req.body.localPhonenumber,
-                          req.body.phone_number,
-                          roomId,
-                        );
-                      }
-                      // send roomId & token to local device by http response
-                      res.status(200);
-                      res.send({
-                        roomId,
-                        token: participantToken,
-                      });
-                    } else if (status === 'error') {
-                      // inform to remote android device using push notification
-                      const message = 'Error while creating token for participant';
-                      if (remoteDeviceToken[0].platform === 'android') {
-                        firebase.sendToDevice(
-                          remoteDeviceToken[0].token,
-                          message,
-                          req.body.localPhonenumber,
-                          req.body.phone_number,
-                          roomId,
-                        );
-                      } else if (remoteDeviceToken[0].platform === 'ios') {
-                        apn.sendNotification(
-                          remoteDeviceToken[0].token,
-                          message,
-                          req.body.localPhonenumber,
-                          req.body.phone_number,
-                          roomId,
-                        );
-                      }
-                      // inform to local device by http response
-                      res.status(500);
-                      res.send('Error while creating token for participant');
-                    }
-                  });
-                } else if (tokenStatus === 'error') {
-                  // inform to remote android device using push notification
-                  const message = 'Error while creating token for moderator';
-                  if (remoteDeviceToken[0].platform === 'android') {
-                    firebase.sendToDevice(
-                      remoteDeviceToken[0].token,
-                      message,
-                      req.body.localPhonenumber,
-                      req.body.phone_number,
-                      roomId,
-                    );
-                  } else if (remoteDeviceToken[0].platform === 'ios') {
-                    apn.sendNotification(
-                      remoteDeviceToken[0].token,
-                      message,
-                      req.body.localPhonenumber,
-                      req.body.phone_number,
-                      roomId,
-                    );
-                  }
-                  // inform to local device by http response
-                  res.status(500);
-                  res.send('Error while creating token for moderator');
-                }
-              });
-            } else if (roomStatus === 'error') {
-              logger.info('Error while creating room');
-              // inform to remote android device using push notification
-              const message = 'Error while creating room';
-              if (remoteDeviceToken[0].platform === 'android') {
-                firebase.sendToDevice(
-                  remoteDeviceToken[0].token,
-                  message,
-                  req.body.localPhonenumber,
-                  req.body.phone_number,
-                  '',
-                );
-              } else if (remoteDeviceToken[0].platform === 'ios') {
-                apn.sendNotification(
-                  remoteDeviceToken[0].token,
-                  message,
-                  req.body.localPhonenumber,
-                  req.body.phone_number,
-                  '',
-                );
-              }
-              // inform to local device by http response
-              res.status(500);
-              res.send('Error while creating room');
-            }
-          });
-        } else {
-          logger.info('Error receiving response from device');
-          // inform to remote device using push notification
-          const message = 'Error receiving response from device';
-          if (remoteDeviceToken[0].platform === 'android') {
-            firebase.sendToDevice(
-              remoteDeviceToken[0].token,
-              message,
-              req.body.localPhonenumber,
-              req.body.phone_number,
-              '',
-            );
-          } else if (remoteDeviceToken[0].platform === 'ios') {
-            apn.sendNotification(
-              remoteDeviceToken[0].token,
-              message,
-              req.body.localPhonenumber,
-              req.body.phone_number,
-              '',
-            );
-          }
-
-          // inform to local device by http response
-          res.status(404);
-          res.send('Device token not found for the given number');
+    getCustomerDetails(req.body.remote_number).then((remoteDeviceToken) => {
+      if (remoteDeviceToken.length > 0) {
+        if (remoteDeviceToken[0].platform === 'android') {
+          firebase.sendToDevice(
+            req.body.call_id,
+            remoteDeviceToken[0].token,
+            'call-initiated',
+            req.body.local_number,
+            req.body.remote_number,
+            '',
+            '',
+          );
+        } else if (remoteDeviceToken[0].platform === 'ios') {
+          apn.sendNotification(
+            req.body.call_id,
+            remoteDeviceToken[0].token,
+            'call-initiated',
+            req.body.local_number,
+            req.body.remote_number,
+            '',
+            '',
+          );
         }
-      });
-    }
-
-    if (type === 'reject') {
-      mongo.getRemoteDeviceToken(req.body.phone_number, req.body.platform);
-      getDeviceDetails(req.body.phone_number, req.body.platform).then((remoteDeviceToken) => {
-        if (remoteDeviceToken) {
-          if (remoteDeviceToken[0].platform === 'android') {
-            firebase.sendToDevice(
-              remoteDeviceToken[0].token,
-              'call rejected',
-              req.body.phone_number,
-              req.body.localPhonenumber,
-              '',
-            );
-          } else if (remoteDeviceToken[0].platform === 'ios') {
-            apn.sendNotification(
-              remoteDeviceToken[0].token,
-              'call rejected',
-              req.body.localPhonenumber,
-              req.body.phone_number,
-              '',
-            );
-          }
-          res.send({
-            message: 'rejection success',
-            result: '0',
-          });
-        }
-      });
-    }
-
-    if (type === 'not_available') {
-      mongo.getRemoteDeviceToken(req.body.phone_number, req.body.platform);
-      getDeviceDetails(req.body.phone_number, req.body.platform).then((remoteDeviceToken) => {
-        if (remoteDeviceToken) {
-          if (remoteDeviceToken[0].platform === 'android') {
-            firebase.sendToDevice(
-              remoteDeviceToken[0].token,
-              'not_available',
-              req.body.phone_number,
-              req.body.localPhonenumber,
-              '',
-            );
-          } else if (remoteDeviceToken[0].platform === 'ios') {
-            apn.sendNotification(
-              remoteDeviceToken[0].token,
-              'not_available',
-              req.body.localPhonenumber,
-              req.body.phone_number,
-              '',
-            );
-          }
-          res.send({
-            message: 'not_available success',
-            result: '0',
-          });
-        }
-      });
-    }
-    // else {
-    //   mongo.getRemoteDeviceToken(req.body.localPhonenumber, req.body.phone_number, req.body.message);
-    //   res.send({
-    //     message: 'id success',
-    //     result: '0',
-    //   });
-    // }
+        res.send({
+          message: 'call-initiated',
+          result: '0',
+        });
+      } else {
+        logger.info(`Record not found for the number ${req.body.remote_number}`);
+        res.status(404);
+        res.send({
+          message: `Record not found for the number ${req.body.remote_number}`,
+        });
+      }
+    });
   } catch (error) {
-    res.status(500).send('message did not send');
+    res.status(500).send({
+      message: 'Error processing request',
+      error,
+    });
   }
 });
 
-// endpoint to register devices
-router.post('/registerDevice', (req, res) => {
+// reject call
+router.put('/call/:callId/unavailable', (req, res) => {
   try {
-    mongo.registerDevice(req.body.phone_number, req.body.token, req.body.platform);
-    res.send('Device is registered successfully');
+    getCustomerDetails(req.body.remote_number).then((remoteDeviceToken) => {
+      if (remoteDeviceToken.length > 0) {
+        if (remoteDeviceToken[0].platform === 'android') {
+          firebase.sendToDevice(
+            req.params.callId,
+            remoteDeviceToken[0].token,
+            'unavailable',
+            req.body.local_number,
+            req.body.remote_number,
+            '',
+            '',
+          );
+        } else if (remoteDeviceToken[0].platform === 'ios') {
+          apn.sendNotification(
+            req.params.callId,
+            remoteDeviceToken[0].token,
+            'unavailable',
+            req.body.local_number,
+            req.body.remote_number,
+            '',
+            '',
+          );
+        }
+        res.send({
+          call_id: req.params.callId,
+          message: 'unavailable',
+          result: '0',
+        });
+      } else {
+        logger.info(`Record not found for the number ${req.body.remote_number}`);
+        res.status(404);
+        res.send({
+          call_id: req.params.callId,
+          message: `Record not found for the number ${req.body.remote_number}`,
+        });
+      }
+    });
   } catch (error) {
-    res.status(500).send('Device is not registered');
+    res.status(500).send({
+      call_id: req.params.callId,
+      message: 'error processing request',
+    });
+  }
+});
+
+// reject call
+router.put('/call/:callId/reject', (req, res) => {
+  try {
+    getCustomerDetails(req.body.remote_number).then((remoteDeviceToken) => {
+      if (remoteDeviceToken.length > 0) {
+        if (remoteDeviceToken[0].platform === 'android') {
+          firebase.sendToDevice(
+            req.params.callId,
+            remoteDeviceToken[0].token,
+            'call rejected',
+            req.body.local_number,
+            req.body.remote_number,
+            '',
+            '',
+          );
+        } else if (remoteDeviceToken[0].platform === 'ios') {
+          apn.sendNotification(
+            req.params.callId,
+            remoteDeviceToken[0].token,
+            'call rejected',
+            req.body.local_number,
+            req.body.remote_number,
+            '',
+            '',
+          );
+        }
+        res.send({
+          call_id: req.params.callId,
+          message: 'call rejected',
+          result: '0',
+        });
+      } else {
+        logger.info(`Record not found for the number ${req.body.remote_number}`);
+        res.status(404);
+        res.send({
+          call_id: req.params.callId,
+          message: `Record not found for the number ${req.body.remote_number}`,
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      call_id: req.params.callId,
+      message: 'error processing request',
+      error,
+    });
+  }
+});
+
+// endpoint to send messages for various actions
+router.put('/call/:callId/answer', (req, res) => {
+  try {
+    getCustomerDetails(req.body.remote_number).then((remoteDeviceToken) => {
+      if (remoteDeviceToken.length > 0) {
+        // create EnableX room
+        let roomId = '';
+        logger.info('creating enablex room');
+        vcxroom.createRoom((roomStatus, roomData) => {
+          logger.info(`roomStatus ${roomStatus}`);
+          logger.info(JSON.stringify(roomData));
+          if (roomStatus === 'success') {
+            // Room Created successfully, create EnableX room token for moderator
+            logger.info('creating enablex token for moderator');
+            roomId = roomData.room.room_id;
+            const createModeratorTokenObj = {
+              name: req.body.remote_number,
+              role: 'moderator',
+              user_ref: req.params.callId,
+              roomId,
+            };
+
+            let moderatorToken = '';
+            vcxroom.getToken(createModeratorTokenObj, (tokenStatus, tokenData) => {
+              logger.info(tokenStatus);
+              logger.info(JSON.stringify(tokenData));
+              if (tokenStatus === 'success') {
+                // moderator token created successfully, now create room token for participant
+                moderatorToken = tokenData.token;
+                const createParticipantTokenObj = {
+                  name: req.body.local_number,
+                  role: 'participant',
+                  user_ref: req.params.callId,
+                  roomId,
+                };
+
+                let participantToken = '';
+                logger.info('creating enablex token for participant');
+                vcxroom.getToken(createParticipantTokenObj, (status, data) => {
+                  logger.info(status);
+                  logger.info(JSON.stringify(data));
+                  if (status === 'success') {
+                    // room created and token created for moderator & participant
+                    participantToken = data.token;
+                    // send roomId & token to remote device using push notification
+                    if (remoteDeviceToken[0].platform === 'android') {
+                      firebase.sendToDevice(
+                        req.params.callId,
+                        remoteDeviceToken[0].token,
+                        'call start',
+                        req.body.local_number,
+                        req.body.remote_number,
+                        roomId,
+                        moderatorToken,
+                      );
+                    } else if (remoteDeviceToken[0].platform === 'ios') {
+                      apn.sendNotification(
+                        req.params.callId,
+                        remoteDeviceToken[0].token,
+                        'call start',
+                        req.body.local_number,
+                        req.body.remote_number,
+                        roomId,
+                        moderatorToken,
+                      );
+                    }
+                    // send roomId & token to local device by http response
+                    res.status(200);
+                    res.send({
+                      call_id: req.params.callId,
+                      message: 'call start',
+                      roomId,
+                      token: participantToken,
+                    });
+                  } else if (status === 'error') {
+                    // inform to remote android device using push notification
+                    if (remoteDeviceToken[0].platform === 'android') {
+                      firebase.sendToDevice(
+                        req.params.callId,
+                        remoteDeviceToken[0].token,
+                        'Error creating token for participant',
+                        req.body.local_number,
+                        req.body.remote_number,
+                        roomId,
+                        '',
+                      );
+                    } else if (remoteDeviceToken[0].platform === 'ios') {
+                      apn.sendNotification(
+                        req.params.callId,
+                        remoteDeviceToken[0].token,
+                        'Error while creating token for participant',
+                        req.body.local_number,
+                        req.body.remote_number,
+                        roomId,
+                        '',
+                      );
+                    }
+                    // inform to local device by http response
+                    res.status(500);
+                    res.send({
+                      call_id: req.params.callId,
+                      message: 'Error creating token for participant',
+                      roomId,
+                      token: '',
+                    });
+                  }
+                });
+              } else if (tokenStatus === 'error') {
+                // inform to remote android device using push notification
+                if (remoteDeviceToken[0].platform === 'android') {
+                  firebase.sendToDevice(
+                    req.params.callId,
+                    remoteDeviceToken[0].token,
+                    'Error creating token for moderator',
+                    req.body.local_number,
+                    req.body.remote_number,
+                    roomId,
+                    '',
+                  );
+                } else if (remoteDeviceToken[0].platform === 'ios') {
+                  apn.sendNotification(
+                    req.params.callId,
+                    remoteDeviceToken[0].token,
+                    'Error creating token for moderator',
+                    req.body.local_number,
+                    req.body.remote_number,
+                    roomId,
+                    '',
+                  );
+                }
+                // inform to local device by http response
+                res.status(500);
+                res.send({
+                  call_id: req.params.callId,
+                  message: 'Error creating token for moderator',
+                  roomId,
+                  token: '',
+                });
+              }
+            });
+          } else if (roomStatus === 'error') {
+            logger.info('Error while creating room');
+            // inform to remote android device using push notification
+            if (remoteDeviceToken[0].platform === 'android') {
+              firebase.sendToDevice(
+                req.params.callId,
+                remoteDeviceToken[0].token,
+                'Error creating room',
+                req.body.local_number,
+                req.body.remote_number,
+                '',
+                '',
+              );
+            } else if (remoteDeviceToken[0].platform === 'ios') {
+              apn.sendNotification(
+                req.params.callId,
+                remoteDeviceToken[0].token,
+                'Error creating room',
+                req.body.local_number,
+                req.body.remote_number,
+                '',
+                '',
+              );
+            }
+            // inform to local device by http response
+            res.status(500);
+            res.send({
+              call_id: req.params.callId,
+              message: 'Error creating room',
+              roomId: '',
+              token: '',
+            });
+          }
+        });
+      } else {
+        logger.info(`Record not found for the number ${req.body.remote_number}`);
+        res.status(404);
+        res.send({
+          call_id: req.params.callId,
+          message: `Record not found for the number ${req.body.remote_number}`,
+          roomId: '',
+          token: '',
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      call_id: '',
+      message: 'Error processing request',
+      roomId: '',
+      token: '',
+      error,
+    });
+  }
+});
+
+const registerDevice = async (phoneNumber, deviceToken, devicePlatform) => {
+  const result = await (mongo.saveCustomer(phoneNumber, deviceToken, devicePlatform));
+  logger.info(JSON.stringify(result));
+  return result;
+};
+
+// endpoint to register devices
+router.post('/device', (req, res) => {
+  try {
+    registerDevice(req.body.phone_number, req.body.device_token, req.body.platform)
+      .then((result) => {
+        if (result) {
+          res.status(200).send({
+            message: 'Device registered successfully',
+            result: '0',
+          });
+        } else {
+          res.status(500).send({
+            message: 'Error registering device',
+          });
+        }
+      });
+  } catch (error) {
+    logger.info(error);
+    res.status(500).send({
+      message: 'Error processing request',
+      error,
+    });
   }
 });
 

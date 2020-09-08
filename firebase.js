@@ -9,7 +9,9 @@ admin.initializeApp({
   databaseURL: process.env.FIREBASE_DATABASE_URL,
 });
 
-const payload = {};
+const payload = {
+  data: {},
+};
 
 const options = {
   priority: 'high',
@@ -18,12 +20,14 @@ const options = {
 
 // send push notification to android devices using firebase
 exports.sendToDevice = (
-  deviceToken, message, localphoneNumber, remotephoneNumber, roomId,
+  UUID, deviceToken, message, localPhoneNumber, remotePhoneNumber, roomId, roomToken,
 ) => {
-  payload.data.localphoneNumber = localphoneNumber;
-  payload.data.remotephoneNumber = remotephoneNumber;
+  payload.data.uuid = UUID;
   payload.data.message = message;
+  payload.data.localPhoneNumber = localPhoneNumber;
+  payload.data.remotePhoneNumber = remotePhoneNumber;
   payload.data.roomId = roomId;
+  payload.data.roomToken = roomToken;
   admin.messaging().sendToDevice(deviceToken, payload, options)
     .then((response) => {
       logger.info(JSON.stringify(payload));

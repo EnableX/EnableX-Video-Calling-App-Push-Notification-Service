@@ -4,7 +4,7 @@ const logger = require('./logger');
 
 // send push notification to iOS devices using APNs
 exports.sendNotification = (
-  deviceToken, roomToken, localPhoneNumber, remotePhoneNumber, roomId,
+  UUID, deviceToken, message, localPhoneNumber, remotePhoneNumber, roomId, roomToken,
 ) => {
   const options = {
     cert: process.env.APNS_CERT_PATH,
@@ -20,12 +20,12 @@ exports.sendNotification = (
   note.alert = '\uD83D\uDCE7 \u2709 You have a new message';
   // define your own payload
   const payload = {
-    UUID: '8224E72D-2413-4A3C-A368-637DA0420CA8',
-    handle: 'start call',
+    UUID,
+    message,
     roomId,
     roomToken,
-    messageFrom: localPhoneNumber,
-    messageTo: remotePhoneNumber,
+    localPhoneNumber,
+    remotePhoneNumber,
   };
 
   note.payload = payload;

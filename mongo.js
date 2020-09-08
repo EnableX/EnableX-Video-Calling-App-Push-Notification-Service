@@ -19,18 +19,20 @@ MongoClient
   });
 
 // register device (token) to the server
-exports.registerDevice = (phoneNumber, tokenId, platform) => {
-  const myobj = { phone_number: phoneNumber, token: tokenId, platform };
-  database.collection('customers').insertOne(myobj, (err) => {
-    if (err) throw err;
-  });
-};
-
-// get device token to the server
-exports.getRemoteDeviceToken = (phoneNumber, platform) => new Promise((resolve, reject) => {
+exports.saveCustomer = (
+  phoneNumber, deviceToken, devicePlatform,
+) => new Promise((resolve, reject) => {
+  const myobj = { phone_number: phoneNumber, token: deviceToken, platform: devicePlatform };
   database
     .collection('customers')
-    .find({ phone_number: phoneNumber, platform })
+    .insertOne(myobj, (err, result) => (err ? reject(err) : resolve(result)));
+});
+
+// get device token to the server
+exports.getCustomerByNumber = (phoneNumber) => new Promise((resolve, reject) => {
+  database
+    .collection('customers')
+    .find({ phone_number: phoneNumber })
     .limit(1)
     .toArray((err, result) => (err ? reject(err) : resolve(result)));
 });

@@ -9,7 +9,7 @@ const logger = require('./logger');
 const app = express();
 
 app.use(bodyParser.json());
-app.use('/posts', require('./routes'));
+app.use('/', require('./routes'));
 
 const port = process.env.SERVICE_PORT || 3001;
 
