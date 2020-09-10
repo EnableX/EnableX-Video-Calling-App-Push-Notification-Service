@@ -3,9 +3,17 @@ require('dotenv').config();
 const logger = require('./logger');
 
 let database;
+let connString;
+if (process.env.MONGO_CONN_STRING) {
+  connString = process.env.MONGO_CONN_STRING;
+} else if (process.env.MONGO_USER && process.env.MONGO_PASSWORD) {
+  connString = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DB}`;
+} else {
+  connString = `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DB}`;
+}
 
 MongoClient
-  .connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}`, {
+  .connect(`${connString}`, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
