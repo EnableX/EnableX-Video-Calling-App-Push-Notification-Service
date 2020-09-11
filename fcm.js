@@ -5,13 +5,21 @@ exports.sendToDevice = (
   UUID, deviceToken, message, localPhoneNumber, remotePhoneNumber, roomId, roomToken,
 ) => {
   const data = JSON.stringify({
-    data: {
-      notification: {
-        title: 'FCM Message',
-        body: roomToken,
-      },
-    },
     to: deviceToken,
+    data: {
+      UUID,
+      message,
+      localPhoneNumber,
+      remotePhoneNumber,
+      roomId,
+      roomToken,
+    },
+    notification: {
+      title: 'Video Call',
+      body: `Video Call from ${localPhoneNumber}`,
+      click_action: `http://localhost:3001/confo.html?user_ref=${remotePhoneNumber}&token=${roomToken}`,
+      icon: 'http://localhost:3001/ab-logo.png',
+    },
   });
 
   const options = {
