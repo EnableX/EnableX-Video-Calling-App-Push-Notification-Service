@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-messaging.js"></script>
+    <script>
+		firebase.initializeApp({
+            'messagingSenderId': '370738563393'
+        })
+        const messaging = firebase.messaging();
+        function initFirebaseMessagingRegistration() {
+            messaging
+                .requestPermission()
+                .then(function () {
+                    messageElement.innerHTML = "Got notification permission";
+                    console.log("Got notification permission");
+                    return messaging.getToken();
+                })
+                .then(function (token) {
+                    // print the token on the HTML page
+					tokenElement.innerHTML = "Token is " + token;
+					custIdElement.value = token;
+                })
+                .catch(function (err) {
+                    errorElement.innerHTML = "Error: " + err;
+                    console.log("Didn't get notification permission", err);
+                });
+        }
+        messaging.onMessage(function (payload) {
+            console.log("Message received. ", JSON.stringify(payload));
+            notificationElement.innerHTML = notificationElement.innerHTML + " " + payload.data.notification;
+        });
+        messaging.onTokenRefresh(function () {
+            messaging.getToken()
+                .then(function (refreshedToken) {
+                    console.log('Token refreshed.');
+					tokenElement.innerHTML = "Token is " + refreshedToken;
+					custIdElement.value = refreshedToken;
+                }).catch(function (err) {
+                    errorElement.innerHTML = "Error: " + err;
+                    console.log('Unable to retrieve refreshed token ', err);
+                });
+        });
+    </script>
+</head>
+
+<body>
+    <h1>This is a test page</h1>
+    <div id="token" style="color:lightblue"></div>
+    <div id="message" style="color:lightblue"></div>
+    <div id="notification" style="color:green"></div>
+    <div id="error" style="color:red"></div>
+	<form id="login_form">
+		<label for="email">Email:</label>
+		<input type="text" id="email" name="email"><br><br>
+		<input type="hidden" id="custId" name="custId" value="">
+		<input type="submit" value="Register" id="joinRoom">
+	</form>
+	<button onclick="initFirebaseMessagingRegistration()">Enable Firebase Messaging</button>
+	<script>
+        messageElement = document.getElementById("message")
+        tokenElement = document.getElementById("token")
+        notificationElement = document.getElementById("notification")
+		errorElement = document.getElementById("error")
+		custIdElement = document.getElementById("custId")
+
+		document.getElementById('login_form').addEventListener('submit', event => {
+			event.preventDefault();
+			var retData = {
+				phone_number: document.getElementById('email').value,
+				device_token: document.getElementById('custId').value,
+				platform: 'web'
+			};
+
+			const xmlHttp = new XMLHttpRequest();
+			xmlHttp.open('POST', '/device');
+			xmlHttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+			xmlHttp.onreadystatechange = function () {
+				if (xmlHttp.readyState !== 4) return;
+				if (xmlHttp.status !== 200 && xmlHttp.status !== 304) {
+					console.log(`HTTP error ${xmlHttp.status}`, null);
+				} else if (this.readyState === 4 && this.status === 200) {
+					const response = JSON.parse(this.responseText);
+					console.log(response);
+					console.log('User subscribed to server');
+				}
+			};
+			xmlHttp.send(JSON.stringify(retData));
+		});
+	</script>
+</html>

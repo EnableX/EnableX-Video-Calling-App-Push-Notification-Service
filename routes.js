@@ -2,6 +2,7 @@ const router = require('express').Router();
 
 const firebase = require('./firebase');
 const apn = require('./apn');
+const fcm = require('./fcm');
 const mongo = require('./mongo');
 const vcxroom = require('./vcxroom');
 const logger = require('./logger');
@@ -19,6 +20,16 @@ router.post('/call', (req, res) => {
       if (remoteDeviceToken.length > 0) {
         if (remoteDeviceToken[0].platform === 'android') {
           firebase.sendToDevice(
+            req.body.call_id,
+            remoteDeviceToken[0].token,
+            'call-initiated',
+            req.body.local_number,
+            req.body.remote_number,
+            '',
+            '',
+          );
+        } else if (remoteDeviceToken[0].platform === 'web') {
+          fcm.sendToDevice(
             req.body.call_id,
             remoteDeviceToken[0].token,
             'call-initiated',
@@ -73,6 +84,16 @@ router.put('/call/:callId/unavailable', (req, res) => {
             '',
             '',
           );
+        } else if (remoteDeviceToken[0].platform === 'web') {
+          fcm.sendToDevice(
+            req.params.callId,
+            remoteDeviceToken[0].token,
+            'unavailable',
+            req.body.local_number,
+            req.body.remote_number,
+            '',
+            '',
+          );
         } else if (remoteDeviceToken[0].platform === 'ios') {
           apn.sendNotification(
             req.params.callId,
@@ -113,6 +134,16 @@ router.put('/call/:callId/reject', (req, res) => {
       if (remoteDeviceToken.length > 0) {
         if (remoteDeviceToken[0].platform === 'android') {
           firebase.sendToDevice(
+            req.params.callId,
+            remoteDeviceToken[0].token,
+            'call rejected',
+            req.body.local_number,
+            req.body.remote_number,
+            '',
+            '',
+          );
+        } else if (remoteDeviceToken[0].platform === 'web') {
+          fcm.sendToDevice(
             req.params.callId,
             remoteDeviceToken[0].token,
             'call rejected',
@@ -210,6 +241,16 @@ router.put('/call/:callId/answer', (req, res) => {
                         roomId,
                         moderatorToken,
                       );
+                    } else if (remoteDeviceToken[0].platform === 'web') {
+                      fcm.sendToDevice(
+                        req.params.callId,
+                        remoteDeviceToken[0].token,
+                        'call start',
+                        req.body.local_number,
+                        req.body.remote_number,
+                        roomId,
+                        moderatorToken,
+                      );
                     } else if (remoteDeviceToken[0].platform === 'ios') {
                       apn.sendNotification(
                         req.params.callId,
@@ -233,6 +274,16 @@ router.put('/call/:callId/answer', (req, res) => {
                     // inform to remote android device using push notification
                     if (remoteDeviceToken[0].platform === 'android') {
                       firebase.sendToDevice(
+                        req.params.callId,
+                        remoteDeviceToken[0].token,
+                        'Error creating token for participant',
+                        req.body.local_number,
+                        req.body.remote_number,
+                        roomId,
+                        '',
+                      );
+                    } else if (remoteDeviceToken[0].platform === 'web') {
+                      fcm.sendToDevice(
                         req.params.callId,
                         remoteDeviceToken[0].token,
                         'Error creating token for participant',
@@ -274,6 +325,16 @@ router.put('/call/:callId/answer', (req, res) => {
                     roomId,
                     '',
                   );
+                } else if (remoteDeviceToken[0].platform === 'web') {
+                  fcm.sendToDevice(
+                    req.params.callId,
+                    remoteDeviceToken[0].token,
+                    'Error creating token for moderator',
+                    req.body.local_number,
+                    req.body.remote_number,
+                    roomId,
+                    '',
+                  );
                 } else if (remoteDeviceToken[0].platform === 'ios') {
                   apn.sendNotification(
                     req.params.callId,
@@ -300,6 +361,16 @@ router.put('/call/:callId/answer', (req, res) => {
             // inform to remote android device using push notification
             if (remoteDeviceToken[0].platform === 'android') {
               firebase.sendToDevice(
+                req.params.callId,
+                remoteDeviceToken[0].token,
+                'Error creating room',
+                req.body.local_number,
+                req.body.remote_number,
+                '',
+                '',
+              );
+            } else if (remoteDeviceToken[0].platform === 'web') {
+              fcm.sendToDevice(
                 req.params.callId,
                 remoteDeviceToken[0].token,
                 'Error creating room',
