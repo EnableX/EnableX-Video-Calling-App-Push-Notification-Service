@@ -15,9 +15,8 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css"
 		integrity="sha256-aAr2Zpq8MZ+YA/D6JtRD3xtrwpEz2IqOS+pWD/7XKIw=" crossorigin="anonymous" />
 	<link href="./css/style-sign-in.css" rel="stylesheet">
-	<script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-messaging.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-analytics.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-messaging.js"></script>
 </head>
 
 <body>
@@ -109,8 +108,8 @@
 			measurementId: "G-VB9KBKQ5EV"
 		};
 		// Initialize Firebase
-		firebase.initializeApp(firebaseConfig);
-		firebase.analytics();
+		// firebase.initializeApp(firebaseConfig);
+		firebase.initializeApp({ messagingSenderId: '370738563393' });
 		const messaging = firebase.messaging();
 
 		document.getElementById('register_form').addEventListener('submit', (event) => {

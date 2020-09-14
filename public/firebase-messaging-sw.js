@@ -3,9 +3,8 @@
 Give the service worker access to Firebase Messaging.
 Note that you can only use Firebase Messaging here, other Firebase libraries are not available in the service worker.
 */
-importScripts('https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js');
-importScripts('https://www.gstatic.com/firebasejs/7.20.0/firebase-messaging.js');
-importScripts('https://www.gstatic.com/firebasejs/7.20.0/firebase-analytics.js');
+importScripts('https://www.gstatic.com/firebasejs/4.13.0/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/4.13.0/firebase-messaging.js');
 
 /*
 Initialize the Firebase app in the service worker by passing in the messagingSenderId.
@@ -23,8 +22,8 @@ var firebaseConfig = {
   measurementId: 'G-VB9KBKQ5EV',
 };
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-firebase.analytics();
+// firebase.initializeApp(firebaseConfig);
+firebase.initializeApp({ messagingSenderId: '370738563393' });
 
 /*
 Retrieve an instance of Firebase Messaging so that it can handle background messages.
