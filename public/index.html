@@ -15,8 +15,9 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css"
 		integrity="sha256-aAr2Zpq8MZ+YA/D6JtRD3xtrwpEz2IqOS+pWD/7XKIw=" crossorigin="anonymous" />
 	<link href="./css/style-sign-in.css" rel="stylesheet">
-	<script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-app.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-messaging.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-messaging.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-analytics.js"></script>
 </head>
 
 <body>
@@ -42,11 +43,13 @@
 			<div class="col-12 col-md-12 col-xl-6 col-lg-6">
 				<div class="form-bg" class="register_form_div" style="display: block;">
 					<h1 class="text-center">Register</h1>
-					<p class="text-center">Register to allow push notification to make and receive video call using push notification.</p>
+					<p class="text-center">Register to allow push notification to make and receive video call using push
+						notification.</p>
 					<form class="mt-4" id="register_form">
 						<div class="form-row">
 							<div class="form-group col-12">
-								<input type="text" class="form-control" id="email" name="email" placeholder="Email" required>
+								<input type="text" class="form-control" id="email" name="email" placeholder="Email"
+									required>
 							</div>
 						</div>
 						<div class="form-row">
@@ -54,7 +57,8 @@
 								<input type="checkbox" name="agree" style="height: 15px;width:15px;" checked required>
 								<label>I
 									agree to <a target="_blank" href="https://www.enablex.io/legals/tou/">Terms of
-										Use</a> and <a target="_blank" href="https://www.enablex.io/legals/privacy-policy/">Privacy
+										Use</a> and <a target="_blank"
+										href="https://www.enablex.io/legals/privacy-policy/">Privacy
 										Policy</a>
 								</label>
 							</div>
@@ -62,10 +66,7 @@
 						<div class="form-row justify-content-start">
 							<div class="form-group col-12 checkbox-sec">
 								<div>
-									<div>
-										<input type="submit" value="Register" class="btn btn-primary"
-											id="joinRoom">
-									</div>
+									<input type="submit" value="Register" class="btn btn-primary" id="joinRoom">
 								</div>
 							</div>
 						</div>
@@ -95,9 +96,21 @@
 		integrity="sha256-OFRAJNoaD8L3Br5lglV7VyLRf0itmoBzWUoM+Sji4/8=" crossorigin="anonymous"></script>
 	<script>
 
-		firebase.initializeApp({
-			messagingSenderId: '370738563393'
-		})
+		// Your web app's Firebase configuration
+		// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+		var firebaseConfig = {
+			apiKey: "AIzaSyD6O3FYY3Ja39ADixqOeElZu3_1ZIaxUgU",
+			authDomain: "enablex-web-push.firebaseapp.com",
+			databaseURL: "https://enablex-web-push.firebaseio.com",
+			projectId: "enablex-web-push",
+			storageBucket: "enablex-web-push.appspot.com",
+			messagingSenderId: "370738563393",
+			appId: "1:370738563393:web:5f8ca3f10a15aaba0639c0",
+			measurementId: "G-VB9KBKQ5EV"
+		};
+		// Initialize Firebase
+		firebase.initializeApp(firebaseConfig);
+		firebase.analytics();
 		const messaging = firebase.messaging();
 
 		document.getElementById('register_form').addEventListener('submit', (event) => {

@@ -459,7 +459,7 @@ const getAllDevices = async () => {
   return result;
 };
 
-// endpoint to all users / devices
+// endpoint to get all users / devices
 router.get('/device', (req, res) => {
   try {
     getAllDevices()
@@ -485,7 +485,7 @@ router.get('/device', (req, res) => {
   }
 });
 
-// endpoint to all users / devices
+// endpoint to get a user / device
 router.get('/device/:deviceId', (req, res) => {
   try {
     getCustomerDetails(req.params.deviceId)
