@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="description" content="EnableX Push Notification Service">
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Sample App: Make and receive an video call using EnableX Video Service</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"
+		integrity="sha256-h20CPZ0QyXlBuAw7A+KluUYx/3pK+c7lYEpqLTlxjYQ=" crossorigin="anonymous" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/fontawesome.min.css"
+		integrity="sha256-CuUPKpitgFmSNQuPDL5cEfPOOJT/+bwUlhfumDJ9CI4=" crossorigin="anonymous" />
+	<link rel="shortcut icon" type="image/ico" href="./img/favicon.ico" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css"
+		integrity="sha256-aAr2Zpq8MZ+YA/D6JtRD3xtrwpEz2IqOS+pWD/7XKIw=" crossorigin="anonymous" />
+	<link href="./css/style-sign-in.css" rel="stylesheet">
+	<script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-messaging.js"></script>
+	<script>
+
+		firebase.initializeApp({
+			messagingSenderId: '370738563393'
+		})
+		const messaging = firebase.messaging();
+
+		messaging
+			.requestPermission()
+			.then(function () {
+				console.log("Got notification permission");
+				return messaging.getToken();
+			})
+			.then(function (token) {
+				console.log(token);
+			})
+			.catch(function (err) {
+				console.log("Didn't get notification permission", err);
+			});
+
+		messaging.onMessage(function (payload) {
+			console.log("Message received. ", JSON.stringify(payload));
+		});
+
+		messaging.onTokenRefresh(function () {
+			messaging.getToken()
+				.then(function (refreshedToken) {
+					console.log('Token refreshed.');
+				}).catch(function (err) {
+					console.log('Unable to retrieve refreshed token ', err);
+				});
+		});
+	</script>
+</head>
+
+<body>
+	<header>
+		<!-- =================================================== Nav section ============================-->
+		<div id="app" class="container">
+			<nav class="navbar navbar-expand-lg navbar-light">
+				<a class="navbar-brand" href="https://www.enablex.io/">
+					<img src="./img/enableX_logo.png" alt="EnableX">
+				</a>
+				<div class="navbar-collapse collapse nav justify-content-end">
+					<ul class="nav justify-content-end ton-hedr-nav">
+						<li class="nav-item">
+							<a class="nav-link login">Sample Code <span class='fa fa-code'></span></a>
+						</li>
+					</ul>
+				</div>
+			</nav>
+		</div>
+	</header>
+	<div class="container">
+		<div class="row d-flex justify-content-center align-items-baseline">
+			<div class="col-12 col-md-12 col-xl-12 col-lg-12">
+				<div class="form-bg" class="register_form_div" style="display: block;">
+					<h1 class="text-center">User List</h1>
+					<p class="text-center">Click to initiate the call to user </p>
+					<div class="chat-container">
+						<div class="container">
+							<div class="row">
+								<div class="col border chat-header">User</div>
+								<div class="col border chat-header">Platform</div>
+								<div class="col border chat-header">Action</div>
+							</div>
+							<div id="users">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<footer>
+		<div class="container">
+			<div class="row">
+				<div class="col-12 col-md-6">
+					<ul class="footerUl">
+						<li><a href="https://www.enablex.io/legals/tou/">Terms</a></li>
+						<li><a href="https://www.enablex.io/legals/privacy-policy/">Privacy Policy</a></li>
+					</ul>
+				</div>
+				<div class="col-12 col-md-6">
+					<p class="footer-p">Copyright © VCLOUDX PTE LTD. All rights reserved.</p>
+				</div>
+			</div>
+		</div>
+	</footer>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+		integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.min.js"
+		integrity="sha256-OFRAJNoaD8L3Br5lglV7VyLRf0itmoBzWUoM+Sji4/8=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.2.0/uuidv4.min.js"
+		integrity="sha512-W6Yf3E7UBUKz5LqkjOHga4hkDX3huRhAvV8I6MFuZ0zX+5ttmVldY8nz9q26SwBItFrb9XSKNMiWEsKg8rDmXg=="
+		crossorigin="anonymous"></script>
+	<script>
+
+		const userList = document.getElementById('users');
+
+		// user initiate a call
+		function makeCall(phone_number) {
+			var retData = {
+				local_number: 'rajesh.g@vcloudx.com',
+				remote_number: phone_number,
+			};
+
+			var callUuid = uuidv4();
+
+			const xmlHttp = new XMLHttpRequest();
+			xmlHttp.open('PUT', `/call/${callUuid}/answer`);
+			xmlHttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+			xmlHttp.onreadystatechange = function () {
+				if (xmlHttp.readyState !== 4) return;
+				if (xmlHttp.status !== 200 && xmlHttp.status !== 304) {
+					console.log(`HTTP error ${xmlHttp.status}`, null);
+				} else if (this.readyState === 4 && this.status === 200) {
+					const response = JSON.parse(this.responseText);
+					console.log(response);
+					console.log('User subscribed to server');
+				}
+			};
+			xmlHttp.send(JSON.stringify(retData));
+		}
+
+		// Render html for a user
+		function renderUser(user) {
+			return `
+				<div class="row">
+				<div class="col border">${user.phone_number}</div>
+				<div class="col border">${user.platform}</div>
+				<div class="col border"><button class="btn" onClick="makeCall('${user.phone_number}')"><i class="fas fa-paper-plane"></i>Call</button></div>
+				</div>`;
+		}
+
+		// Render html for all the available user
+		function renderUsers(users) {
+			console.log(users);
+			userList.innerHTML = `
+				${users.map((user) => renderUser(user)).join('')}
+			`;
+		}
+
+		let getJSON = (url, callback) => {
+			let xhr = new XMLHttpRequest();
+			xhr.open('GET', url, true);
+			xhr.responseType = 'json';
+			xhr.onload = () => {
+				let status = xhr.status;
+				if (status == 200) {
+					callback(null, xhr.response);
+				} else {
+					callback(status);
+				}
+			};
+			xhr.send();
+		};
+
+		getJSON('./device', (err, data) => {
+			if (err != null) {
+				console.error(err);
+			} else {
+				renderUsers(data.result);
+			}
+		});
+
+	</script>
+</body>
+
+</html>

@@ -607,3 +607,14 @@ footer .footerUl li a {
 .loading.yes {
   display: block;
 }
+
+.chat-header {
+	background: rgb(1, 5, 29);
+	color: #fff;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	padding: 15px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}

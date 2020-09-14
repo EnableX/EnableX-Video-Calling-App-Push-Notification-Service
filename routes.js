@@ -453,4 +453,62 @@ router.post('/device', (req, res) => {
   }
 });
 
+const getAllDevices = async () => {
+  const result = await (mongo.getCustomers());
+  logger.info(JSON.stringify(result));
+  return result;
+};
+
+// endpoint to all users / devices
+router.get('/device', (req, res) => {
+  try {
+    getAllDevices()
+      .then((result) => {
+        if (result) {
+          logger.info(JSON.stringify(result));
+          res.status(200).send({
+            message: 'Device found',
+            result,
+          });
+        } else {
+          res.status(500).send({
+            message: 'Error fetching device',
+          });
+        }
+      });
+  } catch (error) {
+    logger.info(error);
+    res.status(500).send({
+      message: 'Error processing request',
+      error,
+    });
+  }
+});
+
+// endpoint to all users / devices
+router.get('/device/:deviceId', (req, res) => {
+  try {
+    getCustomerDetails(req.params.deviceId)
+      .then((result) => {
+        if (result) {
+          logger.info(JSON.stringify(result));
+          res.status(200).send({
+            message: 'Device found',
+            result,
+          });
+        } else {
+          res.status(500).send({
+            message: 'Error fetching device',
+          });
+        }
+      });
+  } catch (error) {
+    logger.info(error);
+    res.status(500).send({
+      message: 'Error processing request',
+      error,
+    });
+  }
+});
+
 module.exports = router;

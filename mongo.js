@@ -44,3 +44,12 @@ exports.getCustomerByNumber = (phoneNumber) => new Promise((resolve, reject) => 
     .limit(1)
     .toArray((err, result) => (err ? reject(err) : resolve(result)));
 });
+
+// get all customer to the server
+exports.getCustomers = () => new Promise((resolve, reject) => {
+  database
+    .collection('customers')
+    .find({})
+    // .limit(1)
+    .toArray((err, result) => (err ? reject(err) : resolve(result)));
+});
