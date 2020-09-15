@@ -17,7 +17,8 @@ exports.sendToDevice = (
     notification: {
       title: 'Video Call',
       body: `Video Call from ${localPhoneNumber}`,
-      click_action: `https://localhost/web-1to1-conf-php/client/confo.html?user_ref=${remotePhoneNumber}&token=${roomToken}`,
+      click_action: `confo.html?user_ref=${remotePhoneNumber}&token=${roomToken}`,
+      // click_action: `http://try.enablex.io/${roomId}`,
       icon: 'http://localhost:3001/ab-logo.png',
     },
   });
