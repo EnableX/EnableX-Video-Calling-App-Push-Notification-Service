@@ -137,7 +137,8 @@
 					const response = JSON.parse(this.responseText);
 					console.log(response);
 					console.log('User subscribed to server');
-					window.open(`confo.html?user_ref=${phone_number}&token=${response.token}`, '_blank');
+					// window.open(`confo.html?user_ref=${phone_number}&token=${response.token}`, '_blank');
+					window.open(`https://try.enablex.io/${response.roomId}`, '_blank');
 				}
 			};
 			xmlHttp.send(JSON.stringify(retData));
