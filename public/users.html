@@ -137,7 +137,7 @@
 					const response = JSON.parse(this.responseText);
 					console.log(response);
 					console.log('User subscribed to server');
-					window.open(`confo.html?user_ref=${response.local_number}&token=${response.roomId}`, '_blank');
+					window.open(`confo.html?user_ref=${phone_number}&token=${response.token}`, '_blank');
 				}
 			};
 			xmlHttp.send(JSON.stringify(retData));
