@@ -1,13 +1,23 @@
 {
   "name": "push-notification-service",
   "version": "1.0.0",
-  "description": "Push notification service for apps",
+  "description": "Push notification service for apps (Android, iOS, web)",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "EnableX",
+    "Video",
+    "Push",
+    "Notification",
+    "Firebase",
+    "FCM",
+		"firebase cloud messaging for web",
+		"APNs",
+    "WebRTC"
+  ],
+  "author": "Rajesh Goyal <rajesh.g@vcloudx.com> (https://enablex.io)",
   "license": "ISC",
   "dependencies": {
     "apn": "^2.2.0",

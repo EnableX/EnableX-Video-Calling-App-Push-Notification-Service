@@ -2,7 +2,7 @@ const vcxutil = require('./vcxutil');
 
 const vcxroom = {};
 
-// HTTP Request Header Creation
+// HTTP Request Options Creation
 const options = {
   host: 'api.enablex.io',
   port: 443,
@@ -12,7 +12,8 @@ const options = {
   },
 };
 
-// Function: To create Token for a Room
+// Function: To create Token for a EnableX video Room
+// Ref - https://developer.enablex.io/video-api-v1-6/server-api/rooms-route/#create-token
 vcxroom.getToken = function getToken(details, callback) {
   options.path = `/v1/rooms/${details.roomId}/tokens`;
   options.method = 'POST';
@@ -26,26 +27,18 @@ vcxroom.getToken = function getToken(details, callback) {
   });
 };
 
-// Function: To create Room
+// Function: To create EnableX video Room
+// Ref - https://developer.enablex.io/video-api-v1-6/server-api/rooms-route/#create-room
 vcxroom.createRoom = function createRoom(callback) {
   const roomMeta = {
-    name: 'test Room',
-    owner_ref: 'xdada',
+    name: 'Push notification service',
+    owner_ref: 'push service',
     settings: {
-      description: '',
       scheduled: false,
-      scheduled_time: '',
       adhoc: false,
-      participants: '2',
-      duration: '60',
-      auto_recording: false,
-      active_talker: true,
-      wait_moderator: false,
+      participants: '4',
       quality: 'SD',
-      mode: 'group',
-    },
-    sip: {
-      enabled: false,
+      auto_recording: false,
     },
   };
 

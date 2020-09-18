@@ -15,46 +15,10 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css"
 		integrity="sha256-aAr2Zpq8MZ+YA/D6JtRD3xtrwpEz2IqOS+pWD/7XKIw=" crossorigin="anonymous" />
 	<link href="./css/style-sign-in.css" rel="stylesheet">
-	<!-- <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-app.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-messaging.js"></script>
-	<script>
-
-		firebase.initializeApp({
-			messagingSenderId: '370738563393'
-		})
-		const messaging = firebase.messaging();
-
-		messaging
-			.requestPermission()
-			.then(function () {
-				console.log("Got notification permission");
-				return messaging.getToken();
-			})
-			.then(function (token) {
-				console.log(token);
-			})
-			.catch(function (err) {
-				console.log("Didn't get notification permission", err);
-			});
-
-		messaging.onMessage(function (payload) {
-			console.log("Message received. ", JSON.stringify(payload));
-		});
-
-		messaging.onTokenRefresh(function () {
-			messaging.getToken()
-				.then(function (refreshedToken) {
-					console.log('Token refreshed.');
-				}).catch(function (err) {
-					console.log('Unable to retrieve refreshed token ', err);
-				});
-		});
-	</script> -->
 </head>
 
 <body>
 	<header>
-		<!-- =================================================== Nav section ============================-->
 		<div id="app" class="container">
 			<nav class="navbar navbar-expand-lg navbar-light">
 				<a class="navbar-brand" href="https://www.enablex.io/">
@@ -114,13 +78,10 @@
 		integrity="sha512-W6Yf3E7UBUKz5LqkjOHga4hkDX3huRhAvV8I6MFuZ0zX+5ttmVldY8nz9q26SwBItFrb9XSKNMiWEsKg8rDmXg=="
 		crossorigin="anonymous"></script>
 	<script>
-
-		const userList = document.getElementById('users');
-
 		// user initiate a call
 		function makeCall(phone_number) {
 			var retData = {
-				local_number: 'rajesh.g@vcloudx.com',
+				local_number: 'user@example.com',
 				remote_number: phone_number,
 			};
 
@@ -137,12 +98,13 @@
 					const response = JSON.parse(this.responseText);
 					console.log(response);
 					console.log('User subscribed to server');
-					// window.open(`confo.html?user_ref=${phone_number}&token=${response.token}`, '_blank');
-					window.open(`https://push.enablex.io/${response.roomId}`, '_blank');
+					window.open(`{ENABLX_VIDEO_WEBAPP}/confo.html?token=${response.token}`, '_blank');
 				}
 			};
 			xmlHttp.send(JSON.stringify(retData));
 		}
+
+		const userList = document.getElementById('users');
 
 		// Render html for a user
 		function renderUser(user) {

@@ -1,6 +1,5 @@
+// npm core modules
 const path = require('path');
-// const { readFileSync } = require('fs');
-// const { createServer } = require('https');
 // npm installed modules
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -11,24 +10,12 @@ const logger = require('./logger');
 
 const app = express();
 
-// Create https server
-// const server = createServer({
-//   key: readFileSync(process.env.CERT_KEY).toString(),
-//   cert: readFileSync(process.env.CERT_CRT).toString(),
-// }, app);
-
-// server.listen(port, () => {
-//   logger.info(`Server is running on port ${port}`);
-// });
-
 // parse application/json
 app.use(bodyParser.json());
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({
-  extended: true,
-}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Set static folder
+// serve static files such as images, CSS files, and JavaScript files in the public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', require('./routes'));

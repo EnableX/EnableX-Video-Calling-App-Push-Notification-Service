@@ -7,6 +7,7 @@ const mongo = require('./mongo');
 const vcxroom = require('./vcxroom');
 const logger = require('./logger');
 
+// get user details by user provided identity.
 const getCustomerDetails = async (remotePhoneNumber) => {
   const result = await (mongo.getCustomerByNumber(remotePhoneNumber));
   logger.info(JSON.stringify(result));
