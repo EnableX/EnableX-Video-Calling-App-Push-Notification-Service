@@ -19,7 +19,9 @@ router.post('/call', (req, res) => {
   try {
     getCustomerDetails(req.body.remote_number).then((remoteDeviceToken) => {
       if (remoteDeviceToken.length > 0) {
-        if (remoteDeviceToken[0].platform === 'android') {
+        let appPlatform = remoteDeviceToken[0].platform;
+        appPlatform = appPlatform.toLowerCase();
+        if (appPlatform === 'android') {
           firebase.sendToDevice(
             req.body.call_id,
             remoteDeviceToken[0].token,
@@ -29,7 +31,7 @@ router.post('/call', (req, res) => {
             '',
             '',
           );
-        } else if (remoteDeviceToken[0].platform === 'web') {
+        } else if (appPlatform === 'web') {
           fcm.sendToDevice(
             req.body.call_id,
             remoteDeviceToken[0].token,
@@ -39,7 +41,7 @@ router.post('/call', (req, res) => {
             '',
             '',
           );
-        } else if (remoteDeviceToken[0].platform === 'ios') {
+        } else if (appPlatform === 'ios') {
           apn.sendNotification(
             req.body.call_id,
             remoteDeviceToken[0].token,
@@ -75,7 +77,9 @@ router.put('/call/:callId/unavailable', (req, res) => {
   try {
     getCustomerDetails(req.body.remote_number).then((remoteDeviceToken) => {
       if (remoteDeviceToken.length > 0) {
-        if (remoteDeviceToken[0].platform === 'android') {
+        let appPlatform = remoteDeviceToken[0].platform;
+        appPlatform = appPlatform.toLowerCase();
+        if (appPlatform === 'android') {
           firebase.sendToDevice(
             req.params.callId,
             remoteDeviceToken[0].token,
@@ -85,7 +89,7 @@ router.put('/call/:callId/unavailable', (req, res) => {
             '',
             '',
           );
-        } else if (remoteDeviceToken[0].platform === 'web') {
+        } else if (appPlatform === 'web') {
           fcm.sendToDevice(
             req.params.callId,
             remoteDeviceToken[0].token,
@@ -95,7 +99,7 @@ router.put('/call/:callId/unavailable', (req, res) => {
             '',
             '',
           );
-        } else if (remoteDeviceToken[0].platform === 'ios') {
+        } else if (appPlatform === 'ios') {
           apn.sendNotification(
             req.params.callId,
             remoteDeviceToken[0].token,
@@ -133,7 +137,9 @@ router.put('/call/:callId/reject', (req, res) => {
   try {
     getCustomerDetails(req.body.remote_number).then((remoteDeviceToken) => {
       if (remoteDeviceToken.length > 0) {
-        if (remoteDeviceToken[0].platform === 'android') {
+        let appPlatform = remoteDeviceToken[0].platform;
+        appPlatform = appPlatform.toLowerCase();
+        if (appPlatform === 'android') {
           firebase.sendToDevice(
             req.params.callId,
             remoteDeviceToken[0].token,
@@ -143,7 +149,7 @@ router.put('/call/:callId/reject', (req, res) => {
             '',
             '',
           );
-        } else if (remoteDeviceToken[0].platform === 'web') {
+        } else if (appPlatform === 'web') {
           fcm.sendToDevice(
             req.params.callId,
             remoteDeviceToken[0].token,
@@ -153,7 +159,7 @@ router.put('/call/:callId/reject', (req, res) => {
             '',
             '',
           );
-        } else if (remoteDeviceToken[0].platform === 'ios') {
+        } else if (appPlatform === 'ios') {
           apn.sendNotification(
             req.params.callId,
             remoteDeviceToken[0].token,
@@ -192,6 +198,8 @@ router.put('/call/:callId/answer', (req, res) => {
   try {
     getCustomerDetails(req.body.remote_number).then((remoteDeviceToken) => {
       if (remoteDeviceToken.length > 0) {
+        let appPlatform = remoteDeviceToken[0].platform;
+        appPlatform = appPlatform.toLowerCase();
         // create EnableX room
         let roomId = '';
         logger.info('creating enablex room');
@@ -232,7 +240,7 @@ router.put('/call/:callId/answer', (req, res) => {
                     // room created and token created for moderator & participant
                     participantToken = data.token;
                     // send roomId & token to remote device using push notification
-                    if (remoteDeviceToken[0].platform === 'android') {
+                    if (appPlatform === 'android') {
                       firebase.sendToDevice(
                         req.params.callId,
                         remoteDeviceToken[0].token,
@@ -242,7 +250,7 @@ router.put('/call/:callId/answer', (req, res) => {
                         roomId,
                         moderatorToken,
                       );
-                    } else if (remoteDeviceToken[0].platform === 'web') {
+                    } else if (appPlatform === 'web') {
                       fcm.sendToDevice(
                         req.params.callId,
                         remoteDeviceToken[0].token,
@@ -252,7 +260,7 @@ router.put('/call/:callId/answer', (req, res) => {
                         roomId,
                         moderatorToken,
                       );
-                    } else if (remoteDeviceToken[0].platform === 'ios') {
+                    } else if (appPlatform === 'ios') {
                       apn.sendNotification(
                         req.params.callId,
                         remoteDeviceToken[0].token,
@@ -273,7 +281,7 @@ router.put('/call/:callId/answer', (req, res) => {
                     });
                   } else if (status === 'error') {
                     // inform to remote android device using push notification
-                    if (remoteDeviceToken[0].platform === 'android') {
+                    if (appPlatform === 'android') {
                       firebase.sendToDevice(
                         req.params.callId,
                         remoteDeviceToken[0].token,
@@ -283,7 +291,7 @@ router.put('/call/:callId/answer', (req, res) => {
                         roomId,
                         '',
                       );
-                    } else if (remoteDeviceToken[0].platform === 'web') {
+                    } else if (appPlatform === 'web') {
                       fcm.sendToDevice(
                         req.params.callId,
                         remoteDeviceToken[0].token,
@@ -293,7 +301,7 @@ router.put('/call/:callId/answer', (req, res) => {
                         roomId,
                         '',
                       );
-                    } else if (remoteDeviceToken[0].platform === 'ios') {
+                    } else if (appPlatform === 'ios') {
                       apn.sendNotification(
                         req.params.callId,
                         remoteDeviceToken[0].token,
@@ -316,7 +324,7 @@ router.put('/call/:callId/answer', (req, res) => {
                 });
               } else if (tokenStatus === 'error') {
                 // inform to remote android device using push notification
-                if (remoteDeviceToken[0].platform === 'android') {
+                if (appPlatform === 'android') {
                   firebase.sendToDevice(
                     req.params.callId,
                     remoteDeviceToken[0].token,
@@ -326,7 +334,7 @@ router.put('/call/:callId/answer', (req, res) => {
                     roomId,
                     '',
                   );
-                } else if (remoteDeviceToken[0].platform === 'web') {
+                } else if (appPlatform === 'web') {
                   fcm.sendToDevice(
                     req.params.callId,
                     remoteDeviceToken[0].token,
@@ -336,7 +344,7 @@ router.put('/call/:callId/answer', (req, res) => {
                     roomId,
                     '',
                   );
-                } else if (remoteDeviceToken[0].platform === 'ios') {
+                } else if (appPlatform === 'ios') {
                   apn.sendNotification(
                     req.params.callId,
                     remoteDeviceToken[0].token,
@@ -360,7 +368,7 @@ router.put('/call/:callId/answer', (req, res) => {
           } else if (roomStatus === 'error') {
             logger.info('Error while creating room');
             // inform to remote android device using push notification
-            if (remoteDeviceToken[0].platform === 'android') {
+            if (appPlatform === 'android') {
               firebase.sendToDevice(
                 req.params.callId,
                 remoteDeviceToken[0].token,
@@ -370,7 +378,7 @@ router.put('/call/:callId/answer', (req, res) => {
                 '',
                 '',
               );
-            } else if (remoteDeviceToken[0].platform === 'web') {
+            } else if (appPlatform === 'web') {
               fcm.sendToDevice(
                 req.params.callId,
                 remoteDeviceToken[0].token,
@@ -380,7 +388,7 @@ router.put('/call/:callId/answer', (req, res) => {
                 '',
                 '',
               );
-            } else if (remoteDeviceToken[0].platform === 'ios') {
+            } else if (appPlatform === 'ios') {
               apn.sendNotification(
                 req.params.callId,
                 remoteDeviceToken[0].token,

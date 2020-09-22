@@ -24,8 +24,8 @@ exports.sendNotification = (
     message,
     roomId,
     roomToken,
-    localPhoneNumber,
-    remotePhoneNumber,
+    localPhoneNumber: remotePhoneNumber,
+    remotePhoneNumber: localPhoneNumber,
   };
 
   note.payload = payload;
