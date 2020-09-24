@@ -20,12 +20,16 @@ const options = {
 
 // send push notification to android devices using firebase
 exports.sendToDevice = (
-  UUID, deviceToken, message, localPhoneNumber, remotePhoneNumber, roomId, roomToken,
+  deviceToken, fcmPayload,
 ) => {
-  payload.data.uuid = UUID;
+  const {
+    callId, message, localNumber, remoteNumber, roomId, roomToken,
+  } = fcmPayload;
+
+  payload.data.uuid = callId;
   payload.data.message = message;
-  payload.data.localPhoneNumber = localPhoneNumber;
-  payload.data.remotePhoneNumber = remotePhoneNumber;
+  payload.data.localPhoneNumber = localNumber;
+  payload.data.remotePhoneNumber = remoteNumber;
   payload.data.roomId = roomId;
   payload.data.roomToken = roomToken;
   admin.messaging().sendToDevice(deviceToken, payload, options)

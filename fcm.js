@@ -2,21 +2,25 @@ const https = require('https');
 require('dotenv').config();
 
 exports.sendToDevice = (
-  UUID, deviceToken, message, localPhoneNumber, remotePhoneNumber, roomId, roomToken,
+  deviceToken, fcmPayload,
 ) => {
+  const {
+    callId, message, localNumber, remoteNumber, roomId, roomToken,
+  } = fcmPayload;
+
   const data = JSON.stringify({
     to: deviceToken,
     data: {
-      UUID,
+      UUID: callId,
       message,
-      localPhoneNumber,
-      remotePhoneNumber,
+      localPhoneNumber: localNumber,
+      remotePhoneNumber: remoteNumber,
       roomId,
       roomToken,
     },
     notification: {
       title: 'Video Call',
-      body: `Video Call from ${localPhoneNumber}`,
+      body: `Video Call from ${localNumber}`,
       click_action: `${process.env.ENABLX_VIDEO_WEBAPP}/confo.html?token=${roomToken}`,
       icon: 'img/enablex-logo.png',
     },

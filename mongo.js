@@ -41,7 +41,7 @@ exports.getCustomerByNumber = (phoneNumber) => new Promise((resolve, reject) => 
   database
     .collection('customers')
     .find({ phone_number: phoneNumber })
-    .limit(1)
+    // .limit(1)
     .toArray((err, result) => (err ? reject(err) : resolve(result)));
 });
 
