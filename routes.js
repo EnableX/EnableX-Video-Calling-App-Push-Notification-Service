@@ -60,7 +60,7 @@ router.post('/call', (req, res) => {
 });
 
 // add others in the call
-router.post('/call/:callId/invite', (req, res) => {
+router.put('/call/:callId/invite', (req, res) => {
   const { callId } = req.params;
   const localNumber = req.body.local_number;
   const remoteNumber = req.body.remote_number;
@@ -385,6 +385,14 @@ router.put('/call/:callId/join', (req, res) => {
   }
 });
 
+// get user details by user provided identity.
+const validateCustomerUnicity = async (phoneNumber, deviceToken) => {
+  const result = await (mongo.getCustomerByTokenNumber(phoneNumber, deviceToken));
+  logger.info(JSON.stringify(result));
+  return result;
+};
+
+// get user details by user provided identity.
 const registerDevice = async (phoneNumber, deviceToken, devicePlatform) => {
   const result = await (mongo.saveCustomer(phoneNumber, deviceToken, devicePlatform));
   logger.info(JSON.stringify(result));
@@ -394,17 +402,27 @@ const registerDevice = async (phoneNumber, deviceToken, devicePlatform) => {
 // endpoint to register devices
 router.post('/device', (req, res) => {
   try {
-    registerDevice(req.body.phone_number, req.body.device_token, req.body.platform)
-      .then((result) => {
-        if (result) {
-          res.status(200).send({
-            message: 'Device registered successfully',
+    validateCustomerUnicity(req.body.phone_number, req.body.device_token)
+      .then((customer) => {
+        if (customer.length > 0) {
+          res.status(409).send({
+            message: 'Device already registered',
             result: '0',
           });
         } else {
-          res.status(500).send({
-            message: 'Error registering device',
-          });
+          registerDevice(req.body.phone_number, req.body.device_token, req.body.platform)
+            .then((device) => {
+              if (device) {
+                res.status(200).send({
+                  message: 'Device registered successfully',
+                  result: '0',
+                });
+              } else {
+                res.status(500).send({
+                  message: 'Error registering device',
+                });
+              }
+            });
         }
       });
   } catch (error) {
