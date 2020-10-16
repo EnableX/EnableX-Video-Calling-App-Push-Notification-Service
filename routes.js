@@ -64,6 +64,7 @@ router.post('/call/:callId/invite', (req, res) => {
   const { callId } = req.params;
   const localNumber = req.body.local_number;
   const remoteNumber = req.body.remote_number;
+  const roomId = req.body.room_id;
   try {
     getCustomerDetails(req.body.remote_number)
       .then((remoteDeviceToken) => {
@@ -71,7 +72,7 @@ router.post('/call/:callId/invite', (req, res) => {
           const message = 'call-invited';
 
           const payload = {
-            callId, message, localNumber, remoteNumber, roomId: '', roomToken: '',
+            callId, message, localNumber, remoteNumber, roomId, roomToken: '',
           };
           for (let i = 0; i < remoteDeviceToken.length; i += 1) {
             // send data to remote device using push notification

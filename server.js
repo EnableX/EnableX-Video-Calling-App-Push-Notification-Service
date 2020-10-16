@@ -1,5 +1,8 @@
 // npm core modules
 const path = require('path');
+const { readFileSync } = require('fs');
+const https = require('https');
+const http = require('http');
 // npm installed modules
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -9,6 +12,22 @@ require('dotenv').config();
 const logger = require('./logger');
 
 const app = express();
+
+// Create https server
+let server;
+if (process.env.LISTEN_SSL === true) {
+  const options = {
+    key: readFileSync(process.env.CERT_KEY).toString(),
+    cert: readFileSync(process.env.CERT_CRT).toString(),
+  };
+  if (process.env.CERT_CA_CERTS) {
+    options.ca = [];
+    options.ca.push(readFileSync(process.env.CERT_CA_CERTS).toString());
+  }
+  server = https.createServer(options, app);
+} else {
+  server = http.createServer(app);
+}
 
 // parse application/json
 app.use(bodyParser.json());
@@ -22,6 +41,6 @@ app.use('/', require('./routes'));
 
 const port = process.env.SERVICE_PORT || 3001;
 
-app.listen(port, () => {
+server.listen(port, () => {
   logger.info(`Server is running on port ${port}`);
 });
