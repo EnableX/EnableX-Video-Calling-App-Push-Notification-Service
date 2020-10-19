@@ -13,8 +13,8 @@
     "Notification",
     "Firebase",
     "FCM",
-		"firebase cloud messaging for web",
-		"APNs",
+    "firebase cloud messaging for web",
+    "APNs",
     "WebRTC"
   ],
   "author": "Rajesh Goyal <rajesh.g@vcloudx.com> (https://enablex.io)",
@@ -25,8 +25,8 @@
     "btoa": "^1.2.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "firebase-admin": "^8.4.0",
-    "mongodb": "^3.3.0",
+    "firebase-admin": "^9.2.0",
+    "mongodb": "^3.6.2",
     "winston": "^3.3.3"
   },
   "devDependencies": {
