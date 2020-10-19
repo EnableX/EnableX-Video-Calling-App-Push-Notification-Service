@@ -23,21 +23,22 @@ exports.sendToDevice = (
   deviceToken, fcmPayload,
 ) => {
   const {
-    callId, message, localNumber, remoteNumber, roomId, roomToken,
+    callId, messageText, localNumber, remoteNumber, roomId, roomToken,
   } = fcmPayload;
 
   payload.data.uuid = callId;
-  payload.data.message = message;
+  payload.data.message = messageText;
   payload.data.localPhoneNumber = localNumber;
   payload.data.remotePhoneNumber = remoteNumber;
   payload.data.roomId = roomId;
   payload.data.roomToken = roomToken;
   admin.messaging().sendToDevice(deviceToken, payload, options)
     .then((response) => {
-      logger.info(JSON.stringify(payload));
-      logger.info('Successfully sent message:', response);
+      logger.info('Successfully sent message:');
+      logger.info(JSON.stringify(response));
     })
     .catch((error) => {
-      logger.info('Error sending message:', error);
+      logger.info('Error sending message:');
+      logger.info(JSON.stringify(error));
     });
 };

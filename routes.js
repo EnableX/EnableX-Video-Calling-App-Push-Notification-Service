@@ -9,6 +9,8 @@ const logger = require('./logger');
 
 // push notification to devices as per platform
 const pushNotification = (appPlatform, deviceToken, payload) => {
+  logger.info('pushNotification');
+  logger.info(JSON.stringify(payload));
   const devicePlatform = appPlatform.toLowerCase();
   if (devicePlatform === 'android') {
     firebase.sendToDevice(deviceToken, payload);
@@ -22,14 +24,41 @@ const pushNotification = (appPlatform, deviceToken, payload) => {
 };
 
 // get user details by user provided identity.
+const validateCustomerUnicity = async (phoneNumber, deviceToken) => {
+  const result = await (mongo.getCustomerByTokenNumber(phoneNumber, deviceToken));
+  logger.info('validateCustomerUnicity');
+  logger.info(JSON.stringify(result));
+  return result;
+};
+
+// get user details by user provided identity.
+const registerDevice = async (phoneNumber, deviceToken, devicePlatform) => {
+  const result = await (mongo.saveCustomer(phoneNumber, deviceToken, devicePlatform));
+  logger.info('registerDevice');
+  logger.info(JSON.stringify(result));
+  return result;
+};
+
+// get user details by user provided identity.
 const getCustomerDetails = async (remotePhoneNumber) => {
   const result = await (mongo.getCustomerByNumber(remotePhoneNumber));
+  logger.info('getCustomerDetails');
+  logger.info(JSON.stringify(result));
+  return result;
+};
+
+// get all customer / devices
+const getAllDevices = async () => {
+  const result = await (mongo.getCustomers());
+  logger.info('getAllDevices');
   logger.info(JSON.stringify(result));
   return result;
 };
 
 // initiate call
 router.post('/call', (req, res) => {
+  logger.info('/call req params');
+  logger.info(JSON.stringify(req.body));
   // @todo - input validation
   const callId = req.body.call_id;
   const localNumber = req.body.local_number;
@@ -38,9 +67,9 @@ router.post('/call', (req, res) => {
     getCustomerDetails(req.body.remote_number)
       .then((remoteDeviceToken) => {
         if (remoteDeviceToken.length > 0) {
-          const message = 'call-initiated';
+          const messageText = 'call-initiated';
           const payload = {
-            callId, message, localNumber, remoteNumber, roomId: '', roomToken: '',
+            callId, messageText, localNumber, remoteNumber, roomId: '', roomToken: '',
           };
           // there can be more than one record (device registered) for a user
           for (let i = 0; i < remoteDeviceToken.length; i += 1) {
@@ -48,7 +77,7 @@ router.post('/call', (req, res) => {
             pushNotification(remoteDeviceToken[i].platform, remoteDeviceToken[i].token, payload);
           }
           // send response to caller by http response
-          res.send({ call_id: callId, message, result: '0' });
+          res.send({ call_id: callId, message: messageText, result: '0' });
         } else {
           logger.info(`Record not found for the number ${remoteNumber}`);
           res.status(404).send({ call_id: callId, message: `Record not found for the number ${remoteNumber}` });
@@ -61,6 +90,9 @@ router.post('/call', (req, res) => {
 
 // add others in the call
 router.put('/call/:callId/invite', (req, res) => {
+  logger.info('/call/:callId/invite req params');
+  logger.info(req.params.callId);
+  logger.info(JSON.stringify(req.body));
   const { callId } = req.params;
   const localNumber = req.body.local_number;
   const remoteNumber = req.body.remote_number;
@@ -69,17 +101,17 @@ router.put('/call/:callId/invite', (req, res) => {
     getCustomerDetails(req.body.remote_number)
       .then((remoteDeviceToken) => {
         if (remoteDeviceToken.length > 0) {
-          const message = 'call-invited';
+          const messageText = 'call-invited';
 
           const payload = {
-            callId, message, localNumber, remoteNumber, roomId, roomToken: '',
+            callId, messageText, localNumber, remoteNumber, roomId, roomToken: '',
           };
           for (let i = 0; i < remoteDeviceToken.length; i += 1) {
             // send data to remote device using push notification
             pushNotification(remoteDeviceToken[i].platform, remoteDeviceToken[i].token, payload);
           }
           // send response to caller by http response
-          res.send({ call_id: callId, message, result: '0' });
+          res.send({ call_id: callId, message: messageText, result: '0' });
         } else {
           logger.info(`Record not found for the number ${remoteNumber}`);
           res.status(404).send({ call_id: callId, message: `Record not found for the number ${remoteNumber}` });
@@ -92,6 +124,9 @@ router.put('/call/:callId/invite', (req, res) => {
 
 // reject call
 router.put('/call/:callId/unavailable', (req, res) => {
+  logger.info('/call/:callId/unavailable req params');
+  logger.info(req.params.callId);
+  logger.info(JSON.stringify(req.body));
   const { callId } = req.params;
   const localNumber = req.body.local_number;
   const remoteNumber = req.body.remote_number;
@@ -99,16 +134,16 @@ router.put('/call/:callId/unavailable', (req, res) => {
     getCustomerDetails(req.body.remote_number)
       .then((remoteDeviceToken) => {
         if (remoteDeviceToken.length > 0) {
-          const message = 'unavailable';
+          const messageText = 'unavailable';
           const payload = {
-            callId, message, localNumber, remoteNumber, roomId: '', roomToken: '',
+            callId, messageText, localNumber, remoteNumber, roomId: '', roomToken: '',
           };
           for (let i = 0; i < remoteDeviceToken.length; i += 1) {
             // send data to remote device using push notification
             pushNotification(remoteDeviceToken[i].platform, remoteDeviceToken[i].token, payload);
           }
           // send response to caller by http response
-          res.send({ call_id: callId, message, result: '0' });
+          res.send({ call_id: callId, message: messageText, result: '0' });
         } else {
           logger.info(`Record not found for the number ${remoteNumber}`);
           res.status(404).send({ call_id: callId, message: `Record not found for the number ${remoteNumber}` });
@@ -121,6 +156,9 @@ router.put('/call/:callId/unavailable', (req, res) => {
 
 // reject call
 router.put('/call/:callId/reject', (req, res) => {
+  logger.info('/call/:callId/reject req params');
+  logger.info(req.params.callId);
+  logger.info(JSON.stringify(req.body));
   const { callId } = req.params;
   const localNumber = req.body.local_number;
   const remoteNumber = req.body.remote_number;
@@ -128,16 +166,16 @@ router.put('/call/:callId/reject', (req, res) => {
     getCustomerDetails(req.body.remote_number)
       .then((remoteDeviceToken) => {
         if (remoteDeviceToken.length > 0) {
-          const message = 'call rejected';
+          const messageText = 'call rejected';
           const payload = {
-            callId, message, localNumber, remoteNumber, roomId: '', roomToken: '',
+            callId, messageText, localNumber, remoteNumber, roomId: '', roomToken: '',
           };
           for (let i = 0; i < remoteDeviceToken.length; i += 1) {
             // send data to remote device using push notification
             pushNotification(remoteDeviceToken[i].platform, remoteDeviceToken[i].token, payload);
           }
           // send response to caller by http response
-          res.send({ call_id: callId, message, result: '0' });
+          res.send({ call_id: callId, message: messageText, result: '0' });
         } else {
           logger.info(`Record not found for the number ${remoteNumber}`);
           res.status(404).send({ call_id: callId, message: `Record not found for the number ${remoteNumber}` });
@@ -150,6 +188,9 @@ router.put('/call/:callId/reject', (req, res) => {
 
 // endpoint to send messages for various actions
 router.put('/call/:callId/answer', (req, res) => {
+  logger.info('/call/:callId/answer req params');
+  logger.info(req.params.callId);
+  logger.info(JSON.stringify(req.body));
   const { callId } = req.params;
   const localNumber = req.body.local_number;
   const remoteNumber = req.body.remote_number;
@@ -162,7 +203,6 @@ router.put('/call/:callId/answer', (req, res) => {
           logger.info('creating enablex room');
           vcxroom.createRoom((roomStatus, roomData) => {
             logger.info(`roomStatus ${roomStatus}`);
-            logger.info(JSON.stringify(roomData));
             if (roomStatus === 'success') {
             // Room Created successfully, create EnableX room token for moderator
               logger.info('creating enablex token for moderator');
@@ -192,15 +232,14 @@ router.put('/call/:callId/answer', (req, res) => {
                   logger.info('creating enablex token for participant');
                   vcxroom.getToken(createParticipantTokenObj, (status, data) => {
                     logger.info(status);
-                    logger.info(JSON.stringify(data));
                     if (status === 'success') {
                     // room created and token created for moderator & participant
                       participantToken = data.token;
                       // send roomId & token to remote device using push notification
-                      const message = 'call start';
+                      const messageText = 'call start';
                       const payload = {
                         callId,
-                        message,
+                        messageText,
                         localNumber,
                         remoteNumber,
                         roomId,
@@ -218,14 +257,14 @@ router.put('/call/:callId/answer', (req, res) => {
                       // send roomId & token to local device by http response
                       res.send({
                         call_id: callId,
-                        message: 'call start',
+                        message: messageText,
                         roomId,
                         token: participantToken,
                       });
                     } else if (status === 'error') {
-                      const message = 'Error creating token for participant';
+                      const messageText = 'Error creating token for participant';
                       const payload = {
-                        callId, message, localNumber, remoteNumber, roomId, roomToken: '',
+                        callId, messageText, localNumber, remoteNumber, roomId, roomToken: '',
                       };
                       for (let i = 0; i < remoteDeviceToken.length; i += 1) {
                         // send data to remote device using push notification
@@ -239,16 +278,16 @@ router.put('/call/:callId/answer', (req, res) => {
                       // send roomId & token to local device by http response
                       res.status(500).send({
                         call_id: callId,
-                        message,
+                        message: messageText,
                         roomId,
                         token: '',
                       });
                     }
                   });
                 } else if (tokenStatus === 'error') {
-                  const message = 'Error creating token for moderator';
+                  const messageText = 'Error creating token for moderator';
                   const payload = {
-                    callId, message, localNumber, remoteNumber, roomId, roomToken: '',
+                    callId, messageText, localNumber, remoteNumber, roomId, roomToken: '',
                   };
                   for (let i = 0; i < remoteDeviceToken.length; i += 1) {
                     // send data to remote device using push notification
@@ -261,7 +300,7 @@ router.put('/call/:callId/answer', (req, res) => {
                   // send roomId & token to local device by http response
                   res.status(500).send({
                     call_id: callId,
-                    message,
+                    message: messageText,
                     roomId,
                     token: '',
                   });
@@ -269,9 +308,9 @@ router.put('/call/:callId/answer', (req, res) => {
               });
             } else if (roomStatus === 'error') {
               logger.info('Error while creating room');
-              const message = 'Error creating room';
+              const messageText = 'Error creating room';
               const payload = {
-                callId, message, localNumber, remoteNumber, roomId: '', roomToken: '',
+                callId, messageText, localNumber, remoteNumber, roomId: '', roomToken: '',
               };
               for (let i = 0; i < remoteDeviceToken.length; i += 1) {
                 // send data to remote device using push notification
@@ -284,7 +323,7 @@ router.put('/call/:callId/answer', (req, res) => {
               // send roomId & token to local device by http response
               res.status(500).send({
                 call_id: callId,
-                message,
+                message: messageText,
                 roomId: '',
                 token: '',
               });
@@ -314,10 +353,13 @@ router.put('/call/:callId/answer', (req, res) => {
 
 // endpoint to send messages for various actions
 router.put('/call/:callId/join', (req, res) => {
+  logger.info('/call/:callId/join req params');
+  logger.info(req.params.callId);
+  logger.info(JSON.stringify(req.body));
   const { callId } = req.params;
   const roomId = req.body.room_id;
-  const { localNumber } = req.body.local_number;
-  const { remoteNumber } = req.body.remote_number;
+  const localNumber = req.body.local_number;
+  const remoteNumber = req.body.remote_number;
   try {
     getCustomerDetails(req.body.remote_number)
       .then((remoteDeviceToken) => {
@@ -326,14 +368,13 @@ router.put('/call/:callId/join', (req, res) => {
           const createParticipantTokenObj = {
             name: localNumber,
             role: 'participant',
-            user_ref: localNumber,
+            user_ref: callId,
             roomId,
           };
 
           logger.info('creating enablex token for participant');
           vcxroom.getToken(createParticipantTokenObj, (status, data) => {
             logger.info(status);
-            logger.info(JSON.stringify(data));
             if (status === 'success') {
             // token created for participant
             // send token to caller device by http response
@@ -343,9 +384,9 @@ router.put('/call/:callId/join', (req, res) => {
                 token: data.token,
               });
             } else if (status === 'error') {
-              const message = 'Error creating token for participant';
+              const messageText = 'Error creating token for participant';
               const payload = {
-                callId, message, localNumber, remoteNumber, roomId, roomToken: '',
+                callId, messageText, localNumber, remoteNumber, roomId, roomToken: '',
               };
               for (let i = 0; i < remoteDeviceToken.length; i += 1) {
                 // send data to remote device using push notification
@@ -358,7 +399,7 @@ router.put('/call/:callId/join', (req, res) => {
               // send roomId & token to local device by http response
               res.status(500).send({
                 call_id: callId,
-                message,
+                message: messageText,
                 roomId,
                 token: '',
               });
@@ -385,22 +426,10 @@ router.put('/call/:callId/join', (req, res) => {
   }
 });
 
-// get user details by user provided identity.
-const validateCustomerUnicity = async (phoneNumber, deviceToken) => {
-  const result = await (mongo.getCustomerByTokenNumber(phoneNumber, deviceToken));
-  logger.info(JSON.stringify(result));
-  return result;
-};
-
-// get user details by user provided identity.
-const registerDevice = async (phoneNumber, deviceToken, devicePlatform) => {
-  const result = await (mongo.saveCustomer(phoneNumber, deviceToken, devicePlatform));
-  logger.info(JSON.stringify(result));
-  return result;
-};
-
 // endpoint to register devices
 router.post('/device', (req, res) => {
+  logger.info('/device req params');
+  logger.info(JSON.stringify(req.body));
   try {
     validateCustomerUnicity(req.body.phone_number, req.body.device_token)
       .then((customer) => {
@@ -434,13 +463,6 @@ router.post('/device', (req, res) => {
   }
 });
 
-// get all customer / devices
-const getAllDevices = async () => {
-  const result = await (mongo.getCustomers());
-  logger.info(JSON.stringify(result));
-  return result;
-};
-
 // endpoint to get all users / devices
 router.get('/device', (req, res) => {
   try {
@@ -469,6 +491,8 @@ router.get('/device', (req, res) => {
 
 // endpoint to get a user / device
 router.get('/device/:deviceId', (req, res) => {
+  logger.info('/device/deviceId params');
+  logger.info(req.params.deviceId);
   try {
     getCustomerDetails(req.params.deviceId)
       .then((result) => {

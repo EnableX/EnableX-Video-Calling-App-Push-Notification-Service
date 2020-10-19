@@ -5,14 +5,14 @@ exports.sendToDevice = (
   deviceToken, fcmPayload,
 ) => {
   const {
-    callId, message, localNumber, remoteNumber, roomId, roomToken,
+    callId, messageText, localNumber, remoteNumber, roomId, roomToken,
   } = fcmPayload;
 
   const data = JSON.stringify({
     to: deviceToken,
     data: {
       UUID: callId,
-      message,
+      message: messageText,
       localPhoneNumber: localNumber,
       remotePhoneNumber: remoteNumber,
       roomId,

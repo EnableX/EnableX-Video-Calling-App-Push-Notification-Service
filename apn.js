@@ -7,7 +7,7 @@ exports.sendNotification = (
   deviceToken, apnPayload,
 ) => {
   const {
-    callId, message, localNumber, remoteNumber, roomId, roomToken,
+    callId, messageText, localNumber, remoteNumber, roomId, roomToken,
   } = apnPayload;
 
   const options = {
@@ -25,9 +25,9 @@ exports.sendNotification = (
   // define your own payload
   const payload = {
     UUID: callId,
-    message,
-    localPhoneNumber: localNumber,
-    remotePhoneNumber: remoteNumber,
+    message: messageText,
+    localPhoneNumber: remoteNumber,
+    remotePhoneNumber: localNumber,
     roomId,
     roomToken,
   };
@@ -37,9 +37,11 @@ exports.sendNotification = (
   note.priority = 10;
   note.pushType = 'alert';
   apnProvider.send(note, deviceToken).then((err, result) => {
-    logger.info(JSON.stringify(note.payload));
-    logger.info('sent to ios');
-    if (err) logger.info(JSON.stringify(err));
+    if (err) {
+      logger.info('Error sending message:');
+      logger.info(JSON.stringify(err));
+    }
+    logger.info('Successfully sent message:');
     logger.info(JSON.stringify(result));
   });
 };
