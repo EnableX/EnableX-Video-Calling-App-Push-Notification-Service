@@ -32,8 +32,8 @@ const validateCustomerUnicity = async (phoneNumber, deviceToken) => {
 };
 
 // get user details by user provided identity.
-const registerDevice = async (phoneNumber, deviceToken, devicePlatform) => {
-  const result = await (mongo.saveCustomer(phoneNumber, deviceToken, devicePlatform));
+const registerDevice = async (customerName, phoneNumber, deviceToken, devicePlatform) => {
+  const result = await (mongo.saveCustomer(customerName, phoneNumber, deviceToken, devicePlatform));
   logger.info('registerDevice');
   logger.info(JSON.stringify(result));
   return result;
@@ -439,7 +439,7 @@ router.post('/device', (req, res) => {
             result: '0',
           });
         } else {
-          registerDevice(req.body.phone_number, req.body.device_token, req.body.platform)
+          registerDevice(req.body.name, req.body.phone_number, req.body.device_token, req.body.platform)
             .then((device) => {
               if (device) {
                 res.status(200).send({

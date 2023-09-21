@@ -28,9 +28,9 @@ MongoClient
 
 // register device (token) to the server
 exports.saveCustomer = (
-  phoneNumber, deviceToken, devicePlatform,
+  customerName, phoneNumber, deviceToken, devicePlatform,
 ) => new Promise((resolve, reject) => {
-  const myobj = { phone_number: phoneNumber, token: deviceToken, platform: devicePlatform };
+  const myobj = { name: customerName, phone_number: phoneNumber, token: deviceToken, platform: devicePlatform };
   database
     .collection('customers')
     .insertOne(myobj, (err, result) => (err ? reject(err) : resolve(result)));
