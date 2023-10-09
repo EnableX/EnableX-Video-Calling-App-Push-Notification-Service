@@ -27,13 +27,20 @@ MongoClient
   });
 
 // register device (token) to the server
-exports.saveCustomer = (
-  customerName, phoneNumber, deviceToken, devicePlatform,
-) => new Promise((resolve, reject) => {
-  const myobj = { name: customerName, phone_number: phoneNumber, token: deviceToken, platform: devicePlatform };
+exports.saveCustomer = (customerName, phoneNumber, deviceToken, devicePlatform) => new Promise((resolve, reject) => {
+  const query = { phone_number: phoneNumber };
+  const update = { $set: { name: customerName, token: deviceToken, platform: devicePlatform } };
+  const options = { upsert: true }; // This option creates a new document if it doesn't exist
+
   database
     .collection('customers')
-    .insertOne(myobj, (err, result) => (err ? reject(err) : resolve(result)));
+    .updateOne(query, update, options, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
 });
 
 // get device token to the server
