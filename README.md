@@ -1,6 +1,7 @@
-# Push notification service for Android, iOS & web
+# Real-Time Video Communication with EnableX and Push Notifications for Android, iOS, and Web
 
-This project will enable you to do EnableX real time video communication using Push notification service for Android, iOS & web
+Push notification service for Android, iOS & web
+This project will enable you to experience the power of real-time video communication enhanced with push notifications. This sample app illustrates the potential of EnableX communication alongside push notification services for Android, iOS, and web platforms.
 
 ---
 ## Requirements
